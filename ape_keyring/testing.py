@@ -23,6 +23,6 @@ class MockBackend(KeyringBackend):
         _require_ape(servicename, "Deleting non-ape secret.")
 
         if username not in self._storage:
-            raise AssertionError("Deleting non-stored username.")
+            raise AssertionError(f"Deleting non-stored username '{username}'.")
 
         del self._storage[username]

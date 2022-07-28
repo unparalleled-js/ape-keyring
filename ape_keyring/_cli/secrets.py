@@ -33,11 +33,11 @@ def _list(cli_ctx):
 
         return True
 
-    did_output = output_secret_list("Global secrets", secret_manager.global_secrets)
-    if did_output and secret_manager.project_secrets:
+    did_output = output_secret_list("Global secrets", secret_manager.global_keys)
+    if did_output and secret_manager.project_keys:
         click.echo()
 
-    output_secret_list("Project secrets", secret_manager.project_secrets)
+    output_secret_list("Project secrets", secret_manager.project_keys)
 
 
 @secrets.command(name="set")

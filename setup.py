@@ -4,16 +4,16 @@ from setuptools import find_packages, setup  # type: ignore
 
 extras_require = {
     "test": [  # `test` GitHub Action jobs uses this
-        "pytest>=6.0,<7.0",  # Core testing package
+        "pytest>=6.0",  # Core testing package
         "pytest-xdist",  # multi-process runner
         "pytest-cov",  # Coverage analyzer plugin
         "hypothesis>=6.2.0,<7.0",  # Strategy-based fuzzer
     ],
     "lint": [
-        "black>=22.3.0,<23.0",  # auto-formatter and linter
-        "mypy>=0.950,<1.0",  # Static type analyzer
-        "flake8>=3.9.2,<4.0",  # Style linter
-        "isort>=5.10.1,<6.0",  # Import sorting linter
+        "black>=22.6.0",  # auto-formatter and linter
+        "mypy>=0.971",  # Static type analyzer
+        "flake8>=4.0.1",  # Style linter
+        "isort>=5.10.1",  # Import sorting linter
     ],
     "release": [  # `release` GitHub Action job uses this
         "setuptools",  # Installation tool
@@ -22,7 +22,7 @@ extras_require = {
     ],
     "dev": [
         "commitizen",  # Manage commits and publishing releases
-        "pre-commit",  # Ensure that linters are run prior to commiting
+        "pre-commit",  # Ensure that linters are run prior to committing
         "pytest-watch",  # `ptw` test watcher/runner
         "IPython",  # Console for interacting
         "ipdb",  # Debugger (Must use `export PYTHONBREAKPOINT=ipdb.set_trace`)
@@ -53,15 +53,15 @@ setup(
     url="https://github.com/unparalleled-js/ape-keyring",
     include_package_data=True,
     install_requires=[
-        "click>=8.1.0",
-        "eth-ape>=0.2.2",
+        "click>=8.1.3",
+        "eth-ape>=0.4.0,<0.5",
         "eth-account==0.5.7",
-        "eth-utils==1.10.0",
-        "keyring>=23.5.0,<24.0",
+        "eth-utils>=1.10.0",
+        "keyring>=23.6.0,<24.0",
         "importlib-metadata ; python_version<'3.8'",
-    ],  # NOTE: Add 3rd party libraries here
+    ],
     entry_points={"ape_cli_subcommands": ["ape_keyring=ape_keyring._cli:cli"]},
-    python_requires=">=3.7,<4",
+    python_requires=">=3.7.2,<4",
     extras_require=extras_require,
     py_modules=["ape_keyring"],
     license="Apache-2.0",
@@ -80,5 +80,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

@@ -1,4 +1,6 @@
-from typing import List, Optional
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import keyring
 from ape.logging import logger
@@ -10,32 +12,37 @@ SECRETS_TRACKER_KEY = "ape-keyring-secrets"
 
 
 class SecretStorage:
-    def __init__(self, tracker_key: str):
+    def __init__(self, tracker_key: str, data_folder: Optional[Path] = None):
         """
         Initialize a new base-storage class.
 
         Args:
             tracker_key (str): The key-name for storing a comma-separated list
               of items tracked.
+            data_folder (Optional[Path]): The path to the plugin's data.
+              If given ``None``, defaults to  ``Path.home() / ".ape" / "keyring"``.
+              Defaults to ``None``.
         """
 
         self._tracker_key = tracker_key
+        self._data_folder = data_folder or Path.home() / ".ape" / "keyring"
 
     def __iter__(self):
         for key in self.keys:
-            yield key, self.get_secret(key)
+            secret = self.get_secret(key)
+            if secret:
+                yield key, secret
 
     @property
-    def keys_str(self) -> str:
-        """
-        A stored, comma-separated list of items. This is for knowing which items
-        we have stored.
+    def data_file_path(self) -> Path:
+        return self._data_folder / "data.json"
 
-        Returns:
-            str
-        """
+    @property
+    def plugin_data(self) -> Dict:
+        if self.data_file_path.is_file():
+            return json.loads(self.data_file_path.read_text())
 
-        return _get_secret(self._tracker_key) or ""
+        return {}
 
     @property
     def keys(self) -> List[str]:
@@ -46,14 +53,7 @@ class SecretStorage:
             List[str]
         """
 
-        keys = list(set([k for k in self.keys_str.split(",") if k and _get_secret(k)]))
-
-        if not keys:
-            return keys
-
-        new_keys_str = ",".join(keys)
-        _set_secret(self._tracker_key, new_keys_str)
-        return keys
+        return self.plugin_data.get(self._tracker_key, [])
 
     def get_secret(self, key: str) -> Optional[str]:
         """
@@ -81,15 +81,13 @@ class SecretStorage:
         """
 
         if key not in self.keys:
-            new_keys_str = f"{self.keys_str},{key}" if self.keys_str else key
-            _set_secret(self._tracker_key, new_keys_str)
+            self._track([*self.keys, key])
 
         _set_secret(key, secret)
 
     def delete_secret(self, key: str):
         if key in self.keys:
-            new_keys_str = ",".join([k for k in self.keys if k != key])
-            _set_secret(self._tracker_key, new_keys_str)
+            self._track([k for k in self.keys if k != key])
 
         return _delete_secret(key)
 
@@ -97,7 +95,16 @@ class SecretStorage:
         for key in self.keys:
             _delete_secret(key)
 
-        _delete_secret(self._tracker_key)
+    def _track(self, new_keys: List[str]):
+        self._store_public_data(self._tracker_key, new_keys)
+
+    def _store_public_data(self, key: str, value: Any):
+        self._data_folder.mkdir(exist_ok=True, parents=True)
+        data = {**dict(self.plugin_data), key: value}
+        if self.data_file_path.exists():
+            self.data_file_path.unlink()
+
+        self.data_file_path.write_text(json.dumps(data))
 
 
 account_storage = SecretStorage(ACCOUNTS_TRACKER_KEY)
@@ -128,6 +135,6 @@ def _delete_secret(key: str):
     try:
         keyring.delete_password(SERVICE_NAME, key)
         return True
-    except PasswordDeleteError as err:
+    except (PasswordDeleteError, AssertionError) as err:
         logger.debug(err)
         return False

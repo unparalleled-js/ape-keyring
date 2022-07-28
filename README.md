@@ -4,7 +4,7 @@ Store secrets and manage accounts for `ape` using [keyring](https://pypi.org/pro
 
 ## Dependencies
 
-* [python3](https://www.python.org/downloads) version 3.7 or greater, python3-dev
+* [python3](https://www.python.org/downloads) version 3.7.2 or greater, python3-dev
 
 ## Installation
 
